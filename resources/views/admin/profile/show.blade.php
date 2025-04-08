@@ -1,136 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Profile</title>
-    @vite('resources/css/app.css')
-</head>
-<body class="bg-gray-100">
-    <div class="min-h-screen bg-gray-100">
-        <!-- Navigation -->
-        <nav class="bg-white shadow">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex">
-                        <div class="flex-shrink-0 flex items-center">
-                            <h1 class="text-xl font-bold">Admin Panel</h1>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <form action="{{ route('admin.logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="text-gray-600 hover:text-gray-900">Logout</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </nav>
+@extends('admin.layouts.app')
 
-        <!-- Profile Section -->
-        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div class="bg-white shadow sm:rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
-                    
-                    @if (session('status'))
-                        <div class="mt-4 p-4 bg-green-100 rounded-lg">
-                            <p class="text-green-700">{{ session('status') }}</p>
+@section('content')
+<div class="container mt-4">
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="row">
+        <!-- Profile Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if($admin->profile_image)
+                        <img src="{{ Storage::url($admin->profile_image) }}" alt="Profile Image" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    @else
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
+                            <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
                         </div>
                     @endif
-
-                    <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-6">
+                    <h5 class="card-title">{{ $admin->name }}</h5>
+                    <p class="card-text">{{ $admin->email }}</p>
+                    
+                    @if($admin->phone)
+                        <p class="card-text">
+                            <i class="bi bi-telephone me-2"></i>{{ $admin->phone }}
+                        </p>
+                    @endif
+                    
+                    @if($admin->bio)
+                        <div class="mt-3">
+                            <h6>Bio</h6>
+                            <p class="card-text">{{ $admin->bio }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Profile Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                            <input type="text" name="name" id="name" value="{{ old('name', $admin->name) }}" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $admin->name) }}" required>
                             @error('name')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                            <input type="email" name="email" id="email" value="{{ old('email', $admin->email) }}" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $admin->email) }}" required>
                             @error('email')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-                            <input type="text" name="phone" id="phone" value="{{ old('phone', $admin->phone) }}" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone (Optional)</label>
+                            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $admin->phone) }}">
                             @error('phone')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div>
-                            <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
-                            <textarea name="bio" id="bio" rows="4" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ old('bio', $admin->bio) }}</textarea>
+                        
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio (Optional)</label>
+                            <textarea class="form-control @error('bio') is-invalid @enderror" id="bio" name="bio" rows="3">{{ old('bio', $admin->bio) }}</textarea>
                             @error('bio')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div>
-                            <label for="profile_image" class="block text-sm font-medium text-gray-700">Profile Image</label>
-                            <input type="file" name="profile_image" id="profile_image" 
-                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        
+                        <div class="mb-3">
+                            <label for="profile_image" class="form-label">Profile Image</label>
+                            <input type="file" class="form-control @error('profile_image') is-invalid @enderror" id="profile_image" name="profile_image">
+                            <small class="text-muted">Leave empty to keep current image.</small>
                             @error('profile_image')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            @if($admin->profile_image)
-                                <div class="mt-2">
-                                    <img src="{{ Storage::url($admin->profile_image) }}" alt="Profile Image" class="h-20 w-20 rounded-full object-cover">
-                                </div>
-                            @endif
                         </div>
-
-                        <div class="space-y-4">
-                            <h4 class="text-md font-medium text-gray-900">Change Password</h4>
-                            
-                            <div>
-                                <label for="current_password" class="block text-sm font-medium text-gray-700">Current Password</label>
-                                <input type="password" name="current_password" id="current_password" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('current_password')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
-                                <input type="password" name="new_password" id="new_password" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                @error('new_password')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                                <input type="password" name="new_password_confirmation" id="new_password_confirmation" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            </div>
+                        
+                        <hr class="my-4">
+                        <h5>Change Password</h5>
+                        <p class="text-muted small">Leave these fields empty if you don't want to change your password.</p>
+                        
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">Current Password</label>
+                            <input type="password" class="form-control @error('current_password') is-invalid @enderror" id="current_password" name="current_password">
+                            @error('current_password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-
-                        <div>
-                            <button type="submit" 
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Update Profile
-                            </button>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">New Password</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password_confirmation" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html> 
+</div>
+@endsection 

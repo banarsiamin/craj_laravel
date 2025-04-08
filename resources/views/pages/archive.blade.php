@@ -184,6 +184,14 @@
                     </div>
                 </div>
             @endif
+            
+            <!-- Pagination Links -->
+            <div class="d-flex justify-content-center mt-4">
+                @if(isset($articles) && $articles instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                    {{ $articles->links() }}
+                @endif
+            </div>
+            
         </div>
     </div>
 </div>

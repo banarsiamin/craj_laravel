@@ -12,19 +12,24 @@ class HomeController extends Controller
      */
     public function index(): View
     {
-        // Get latest published articles for display on homepage
-        $latestArticles = Article::published()
-            ->orderBy('published_date', 'desc')
-            ->take(5)
-            ->get();
-            
-        // Get most read articles
-        $popularArticles = Article::published()
+        $description = \App\Models\Setting::getValue('journal_description');
+        $openAccessPolicy = \App\Models\Setting::getValue('open_access_policy');
+        $editorialPolicies = \App\Models\Setting::getValue('editorial_policies');
+        
+        // Get current issue
+        $currentIssueId = \App\Models\Setting::getValue('current_issue_id');
+        $currentIssue = null;
+        if ($currentIssueId) {
+            $currentIssue = \App\Models\Issue::with('articles')->find($currentIssueId);
+        }
+        
+        // Get popular articles
+        $popularArticles = \App\Models\Article::published()
             ->orderBy('views', 'desc')
-            ->take(5)
+            ->take(3)
             ->get();
-            
-        return view('pages.home', compact('latestArticles', 'popularArticles'));
+        
+        return view('pages.home', compact('description', 'openAccessPolicy', 'editorialPolicies', 'currentIssue', 'popularArticles'));
     }
     
     /**
@@ -40,12 +45,26 @@ class HomeController extends Controller
      */
     public function current(): View
     {
-        $currentIssueArticles = Article::published()
-            ->orderBy('published_date', 'desc')
-            ->take(10)
-            ->get();
+        // Get the current issue ID from settings
+        $currentIssueId = \App\Models\Setting::getValue('current_issue_id');
+        
+        // Get the current issue details
+        $currentIssue = null;
+        $currentIssueArticles = collect(); // Empty collection as default
+        
+        if ($currentIssueId) {
+            $currentIssue = \App\Models\Issue::find($currentIssueId);
             
-        return view('pages.current', compact('currentIssueArticles'));
+            if ($currentIssue) {
+                // Get articles that belong to this issue
+                $currentIssueArticles = $currentIssue->articles()
+                    ->published()
+                    ->orderBy('published_date', 'desc')
+                    ->paginate(10);
+            }
+        }
+        
+        return view('pages.current', compact('currentIssue', 'currentIssueArticles'));
     }
     
     /**
@@ -53,17 +72,20 @@ class HomeController extends Controller
      */
     public function archive(): View
     {
-        // Group articles by volume and issue
-        $archives = Article::published()
+        // Get paginated list of all published articles ordered by volume and issue
+        $articles = Article::published()
             ->orderBy('volume', 'desc')
             ->orderBy('issue', 'desc')
-            ->get()
-            ->groupBy('volume')
+            ->orderBy('published_date', 'desc')
+            ->paginate(20);
+            
+        // Group the current page of articles by volume and issue
+        $archives = $articles->groupBy('volume')
             ->map(function ($volume) {
                 return $volume->groupBy('issue');
             });
             
-        return view('pages.archive', compact('archives'));
+        return view('pages.archive', compact('archives', 'articles'));
     }
     
     /**

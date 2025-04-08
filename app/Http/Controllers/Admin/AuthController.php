@@ -5,9 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        // $this->middleware('web');
+    }
+
     public function showLoginForm()
     {
         return view('admin.auth.login');
@@ -15,14 +21,19 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
+        $credentials = $request->only('email', 'password');
+        $remember = $request->filled('remember');
+
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard');
+            
+            return redirect()->intended('/admin/dashboard')
+                           ->with('status', 'Welcome back!');
         }
 
         return back()->withErrors([
@@ -33,8 +44,11 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('admin')->logout();
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/admin/login');
+        
+        return redirect()->route('admin.login')
+                        ->with('status', 'You have been logged out successfully.');
     }
 }

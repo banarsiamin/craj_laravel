@@ -14,22 +14,13 @@ return new class extends Migration
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('slug')->unique();
             $table->text('abstract');
-            $table->string('author_name');
-            $table->string('email');
-            $table->string('affiliation');
-            $table->string('country');
-            $table->string('keywords');
-            $table->string('category');
-            $table->string('volume')->nullable();
-            $table->string('issue')->nullable();
-            $table->string('doi')->nullable();
-            $table->string('page_no')->nullable();
+            $table->longText('content');
+            $table->string('authors');
+            $table->string('pdf_path')->nullable();
+            $table->enum('status', ['draft', 'under_review', 'published'])->default('draft');
             $table->integer('views')->default(0);
-            $table->string('manuscript_path');
-            $table->string('cover_letter_path')->nullable();
-            $table->boolean('is_published')->default(false);
-            $table->date('published_date')->nullable();
             $table->timestamps();
         });
     }

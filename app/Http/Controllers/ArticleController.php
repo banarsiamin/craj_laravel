@@ -79,10 +79,10 @@ class ArticleController extends Controller
     /**
      * Display the specified article
      */
-    public function show(Article $article): View
+    public function show(Article $article, Request $request): View
     {
-        // Increment the view count
-        $article->incrementViews();
+        // Record view with IP address tracking
+        $article->recordView($request->ip(), $request->userAgent());
         
         // Get popular articles for sidebar
         $popularArticles = Article::published()
@@ -92,5 +92,30 @@ class ArticleController extends Controller
             ->get();
             
         return view('pages.article-detail', compact('article', 'popularArticles'));
+    }
+
+    /**
+     * Like the specified article
+     */
+    public function like(Article $article)
+    {
+        // Increment the like count
+        $article->incrementLikes();
+        
+        return response()->json([
+            'success' => true,
+            'likes' => $article->likes
+        ]);
+    }
+
+    /**
+     * Show just the abstract for an article
+     */
+    public function showAbstract(Article $article)
+    {
+        return response()->json([
+            'success' => true,
+            'abstract' => $article->abstract
+        ]);
     }
 }
