@@ -15,8 +15,8 @@ A web application for a research journal built with Laravel 11.
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/crajl-laravel.git
-cd crajl-laravel
+git clone https://github.com/banarsiamin/craj_laravel.git
+cd craj_laravel
 ```
 
 2. Install dependencies
